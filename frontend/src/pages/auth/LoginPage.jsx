@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import api from '../../services/api';
+import Globe3D from '../../components/Globe3D';
 import './LoginPage.css';
 
 // Tech background canvas component
@@ -125,14 +126,7 @@ export default function LoginPage() {
       
       <div className="login-content fade-in">
         <div className="globe-container">
-          <div className="globe-animation">
-            <div className="globe-texture"></div>
-          </div>
-          <div className="horizontal-bars">
-             <div className="bar"></div>
-             <div className="bar"></div>
-             <div className="bar"></div>
-          </div>
+          <Globe3D size={160} />
         </div>
 
         <form className="login-form" onSubmit={handleLogin}>
