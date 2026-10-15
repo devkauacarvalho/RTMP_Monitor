@@ -57,7 +57,7 @@ const TechBackground = () => {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (dist < 180) {
             ctx.beginPath();
             ctx.strokeStyle = `rgba(0, 150, 255, ${0.4 - (dist / 180) * 0.4})`;
@@ -103,11 +103,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       const response = await api.post('/auth/login', { username, password });
       login(response.data.token, response.data.user);
-      
+
       if (response.data.user.role === 'tech') {
         navigate('/tech');
       } else {
@@ -123,7 +123,7 @@ export default function LoginPage() {
   return (
     <div className="login-page-container">
       <TechBackground />
-      
+
       <div className="login-content fade-in">
         <div className="globe-container">
           <Globe3D size={160} />
@@ -131,17 +131,17 @@ export default function LoginPage() {
 
         <form className="login-form" onSubmit={handleLogin}>
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="input-group">
             <span className="input-icon">
               {/* User Icon */}
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
             </span>
-            <input 
-              type="text" 
-              placeholder="Username" 
+            <input
+              type="text"
+              placeholder="Usuário"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -152,12 +152,12 @@ export default function LoginPage() {
             <span className="input-icon">
               {/* Lock Icon */}
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
               </svg>
             </span>
-            <input 
-              type="password" 
-              placeholder="Password" 
+            <input
+              type="password"
+              placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -166,17 +166,17 @@ export default function LoginPage() {
 
           <div className="form-actions">
             <div className="form-actions-left">
-              <a href="#" className="forgot-password">Forgot your password?</a>
+              <a href="#" className="forgot-password">Esqueceu sua senha?</a>
               <label className="remember-me">
                 <input type="radio" name="remember" defaultChecked />
                 <span className="radio-custom"></span>
-                Remember me
+                Lembrar informações de login
               </label>
             </div>
           </div>
 
           <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? '...' : 'Login'}
+            {isLoading ? '...' : 'Entrar'}
           </button>
         </form>
       </div>

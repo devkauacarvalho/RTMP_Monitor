@@ -31,50 +31,83 @@ varying vec3 vNormal;
 varying vec3 vViewPos;
 
 void main() {
-  vec4 tex = texture2D(uEarthMap, vUv);
-  float lum = dot(tex.rgb, vec3(0.299, 0.587, 0.114)) * uLoaded;
+  vec2 texel = vec2(1.0 / 1600.0, 1.0 / 800.0);
 
-  float land  = smoothstep(0.03, 0.12, lum);
-  float city  = smoothstep(0.15, 0.50, lum);
-  float coast = smoothstep(0.02, 0.05, lum) - smoothstep(0.08, 0.16, lum);
+  // Sample water mask: 1.0 = ocean, 0.0 = land
+  float wC = texture2D(uEarthMap, vUv).r;
+  float wR = texture2D(uEarthMap, vUv + vec2(texel.x, 0.0)).r;
+  float wL = texture2D(uEarthMap, vUv - vec2(texel.x, 0.0)).r;
+  float wU = texture2D(uEarthMap, vUv + vec2(0.0, texel.y)).r;
+  float wD = texture2D(uEarthMap, vUv - vec2(0.0, texel.y)).r;
 
-  vec3 ocean    = vec3(0.004, 0.012, 0.03);
-  vec3 landCol  = vec3(0.0,   0.10,  0.18);
-  vec3 cityCol  = vec3(0.0,   0.85,  1.0);
-  vec3 neonCyan = vec3(0.0,   1.0,   0.95);
+  // Sharp coastline edge
+  float dX = wR - wL;
+  float dY = wU - wD;
+  float edgeCore = length(vec2(dX, dY)) * 2.8;
 
-  vec3 color = mix(ocean, landCol, land);
-  color = mix(color, cityCol, city * 0.55);
-  
-  float coastCore = pow(clamp(coast, 0.0, 1.0), 2.5); 
-  
-  color += neonCyan * coast * 0.5;
-  color += neonCyan * coastCore * 2.5; 
+  // Wider sample for subtle outer neon glow around continent borders
+  vec2 texelW = texel * 0.1;
+  float wR2 = texture2D(uEarthMap, vUv + vec2(texelW.x, 0.0)).r;
+  float wL2 = texture2D(uEarthMap, vUv - vec2(texelW.x, 0.0)).r;
+  float wU2 = texture2D(uEarthMap, vUv + vec2(0.0, texelW.y)).r;
+  float wD2 = texture2D(uEarthMap, vUv - vec2(0.0, texelW.y)).r;
+  float edgeGlow = length(vec2(wR2 - wL2, wU2 - wD2)) * 1.4;
 
+  float neonCoast = clamp(edgeCore * 1.2 + edgeGlow * 0.6, 0.0, 1.0);
+
+  // Identify land vs water
+  float isWater = mix(1.0, wC, uLoaded);
+  float isLand  = clamp(1.0 - isWater, 0.0, 1.0);
+
+  // Micro-dot matrix pattern inside continents (futuristic digital earth)
+  float dotX = sin(vUv.x * 360.0 * 2.5);
+  float dotY = sin(vUv.y * 180.0 * 5.0);
+  float dotPattern = smoothstep(0.3, 0.9, dotX * dotY);
+
+  vec3 landBase = vec3(0.03, 0.11, 0.20);
+  vec3 landDots = vec3(0.08, 0.26, 0.44);
+  vec3 continentCol = mix(landBase, landDots, dotPattern * 0.55);
+
+  // Ocean: translucent dark tech navy
+  vec3 oceanCol = vec3(0.006, 0.024, 0.055);
+
+  // Base globe color
+  vec3 color = mix(oceanCol, continentCol, isLand);
+
+  // High-tech wireframe longitude and latitude grid lines
   float lonDeg = vUv.x * 360.0;
-  float latDeg = vUv.y * 180.0;
+  float latDeg = (vUv.y - 0.5) * 180.0;
+  float fLon = abs(fract(lonDeg / 15.0 + 0.5) - 0.5) * 15.0;
+  float fLat = abs(fract(latDeg / 15.0 + 0.5) - 0.5) * 15.0;
+  float lineLon = 1.0 - smoothstep(0.0, 0.50, fLon);
+  float lineLat = 1.0 - smoothstep(0.0, 0.50, fLat);
+  float grid = max(lineLon, lineLat);
 
-  float s1 = 15.0;
-  float gx1 = min(mod(lonDeg, s1), s1 - mod(lonDeg, s1));
-  float gy1 = min(mod(latDeg, s1), s1 - mod(latDeg, s1));
-  float fine = 1.0 - smoothstep(0.0, 0.35, min(gx1, gy1));
+  // Equator accented
+  float equator = 1.0 - smoothstep(0.0, 0.75, abs(latDeg));
+  grid = max(grid, equator * 1.3);
 
-  float s2 = 45.0;
-  float gx2 = min(mod(lonDeg, s2), s2 - mod(lonDeg, s2));
-  float gy2 = min(mod(latDeg, s2), s2 - mod(latDeg, s2));
-  float major = 1.0 - smoothstep(0.0, 0.5, min(gx2, gy2));
+  // Add grid (prominent in oceans, subtle under continents)
+  vec3 gridCol = vec3(0.0, 0.65, 0.95);
+  color += gridCol * grid * (0.60 - isLand * 0.35);
 
-  color += vec3(0.0, 0.20, 0.35) * fine  * 0.12;
-  color += vec3(0.0, 0.35, 0.55) * major * 0.22;
+  // Neon continent border (crisp cyan with electric glow)
+  vec3 neonCyan = vec3(0.0, 1.0, 0.96);
+  vec3 neonBlue = vec3(0.0, 0.55, 1.0);
+  vec3 borderCol = mix(neonBlue, neonCyan, edgeCore);
+  color += borderCol * neonCoast * 2.2;
 
+  // Fresnel rim glow
   vec3 V = normalize(-vViewPos);
   float rim = pow(1.0 - max(dot(vNormal, V), 0.0), 3.0);
-  color += vec3(0.0, 0.50, 0.90) * rim * 0.55;
+  color += neonCyan * rim * 0.65;
 
-  float scan = sin(gl_FragCoord.y * 1.2 + uTime * 2.0) * 0.5 + 0.5;
-  color *= 0.97 + scan * 0.03;
+  // Subtle digital scan effect
+  float scan = sin(gl_FragCoord.y * 1.4 + uTime * 2.2) * 0.5 + 0.5;
+  color *= 0.96 + scan * 0.04;
 
-  float alpha = 0.72 + land * 0.22 + rim * 0.28 + coastCore * 0.3;
+  // Alpha: oceans are translucent, continents have body, outlines and rims pop
+  float alpha = 0.28 + isLand * 0.52 + neonCoast * 0.45 + rim * 0.35;
   gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
 }
 `;
@@ -131,11 +164,12 @@ function createGlowCanvas() {
  * ═══════════════════════════════════════════════════════════════════════ */
 
 /**
- * Earth texture URL — NASA night-lights via the three-globe package on
- * unpkg (CORS-enabled, very reliable CDN).
+ * Earth water mask URL — local fast asset with CDN fallback.
+ * 1.0 (white) = water / oceans, 0.0 (black) = land / continents.
  */
-const EARTH_TEX_URL =
-  'https://unpkg.com/three-globe/example/img/earth-night.jpg';
+const EARTH_TEX_URL = '/earth-water.png';
+const CDN_EARTH_TEX_URL =
+  'https://unpkg.com/three-globe/example/img/earth-water.png';
 
 export default function Globe3D({ size = 150 }) {
   const mountRef = useRef(null);
@@ -166,20 +200,29 @@ export default function Globe3D({ size = 150 }) {
       uLoaded: { value: 0.0 },
     };
 
-    /* ── Load Earth night-lights texture ── */
+    /* ── Load Earth water/land mask texture ── */
+    const applyTexture = (tex) => {
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      uniforms.uEarthMap.value = tex;
+      uniforms.uLoaded.value = 1.0;
+      disposables.push(tex);
+    };
+
     const loader = new THREE.TextureLoader();
     loader.crossOrigin = 'anonymous';
     loader.load(
       EARTH_TEX_URL,
-      (tex) => {
-        tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-        uniforms.uEarthMap.value = tex;
-        uniforms.uLoaded.value = 1.0;
-        disposables.push(tex);
-      },
+      applyTexture,
       undefined,
-      () => console.warn('Globe3D: texture load failed — grid-only mode'),
+      () => {
+        loader.load(
+          CDN_EARTH_TEX_URL,
+          applyTexture,
+          undefined,
+          () => console.warn('Globe3D: texture load failed — grid-only mode'),
+        );
+      },
     );
 
     /* ── Globe ── */
