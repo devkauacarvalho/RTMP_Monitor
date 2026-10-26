@@ -24,7 +24,7 @@ exports.login = async (req, res, next) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'rtmp_monitor_dev_secret_jwt_key_2026',
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 

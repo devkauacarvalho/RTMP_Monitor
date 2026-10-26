@@ -10,6 +10,7 @@ const cameraController = require('../controllers/camera.controller');
 
 // Rotas para o Visualizador autenticado — retorna apenas as câmeras permitidas
 router.get('/my', authenticate, cameraController.getMyCamera);
+router.get('/my/:id', authenticate, cameraController.getMyCameraById);
 
 // Rotas de Técnico
 router.use(authenticate, requireTech);

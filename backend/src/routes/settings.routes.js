@@ -7,6 +7,7 @@ const settingsController = require('../controllers/settings.controller');
 
 router.use(authenticate, requireTech);
 
+router.get('/stats', settingsController.getStats);
 router.get('/', settingsController.get);
 router.put('/', settingsController.update);
 

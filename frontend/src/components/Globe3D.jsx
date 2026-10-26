@@ -83,10 +83,6 @@ void main() {
   float lineLat = 1.0 - smoothstep(0.0, 0.50, fLat);
   float grid = max(lineLon, lineLat);
 
-  // Equator accented
-  float equator = 1.0 - smoothstep(0.0, 0.75, abs(latDeg));
-  grid = max(grid, equator * 1.3);
-
   // Add grid (prominent in oceans, subtle under continents)
   vec3 gridCol = vec3(0.0, 0.65, 0.95);
   color += gridCol * grid * (0.60 - isLand * 0.35);
@@ -264,36 +260,18 @@ export default function Globe3D({ size = 150 }) {
     scene.add(glowSprite);
     disposables.push(glowTex, glowMat);
 
-    /* ── Orbital rings ── */
-    const addRing = (inner, outer, opacity, rx, ry) => {
-      const g = new THREE.RingGeometry(inner, outer, 128);
-      const m = new THREE.MeshBasicMaterial({
-        color: 0x00ccff, transparent: true, opacity,
-        side: THREE.DoubleSide, depthWrite: false,
-      });
-      const mesh = new THREE.Mesh(g, m);
-      mesh.rotation.x = rx;
-      mesh.rotation.y = ry;
-      scene.add(mesh);
-      disposables.push(g, m);
-    };
-
-    addRing(1.35, 1.38, 0.28, Math.PI / 2.2, 0.3);
-    addRing(1.55, 1.57, 0.16, Math.PI / 2.5, -0.2);
-
-    // Dashed outer ring
+    /* ── Outer HUD ring (framing outside the globe, never intersecting or cutting) ── */
     for (let i = 0; i < 24; i++) {
+      if (i % 3 === 0) continue;
       const g = new THREE.RingGeometry(
-        1.65, 1.67, 6, 1,
-        (i * Math.PI * 2) / 24, Math.PI / 30,
+        1.30, 1.32, 16, 1,
+        (i * Math.PI * 2) / 24, Math.PI / 36,
       );
       const m = new THREE.MeshBasicMaterial({
-        color: 0x00ccff, transparent: true, opacity: 0.2,
+        color: 0x00ccff, transparent: true, opacity: 0.3,
         side: THREE.DoubleSide, depthWrite: false,
       });
       const seg = new THREE.Mesh(g, m);
-      seg.rotation.x = Math.PI / 2.3;
-      seg.rotation.y = 0.1;
       scene.add(seg);
       disposables.push(g, m);
     }

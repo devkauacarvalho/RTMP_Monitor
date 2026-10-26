@@ -1,9 +1,225 @@
-/* HlsPlayer.css */
-.hls-player {
+/* HlsPlayer.css — CFTV Surveillance Monitor Styling */
+
+.cftv-player-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #020617;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  user-select: none;
+}
+
+.hls-player-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-md);
-  background: #000;
   display: block;
+  background: #000;
+}
+
+/* Screen HUD Overlay */
+.cftv-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.65) 0%, transparent 35%, transparent 65%, rgba(2, 6, 23, 0.85) 100%);
+}
+
+.cftv-overlay-top,
+.cftv-overlay-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.cftv-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cftv-rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: cftvPulse 1.5s infinite;
+}
+
+@keyframes cftvPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.cftv-rec-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f87171;
+  letter-spacing: 0.05em;
+}
+
+.cftv-ch-badge {
+  font-size: 0.65rem;
+  font-family: monospace;
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+}
+
+.cftv-clock {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cftv-camera-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.cftv-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  pointer-events: auto;
+}
+
+.cftv-icon-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cftv-icon-btn:hover {
+  color: #38bdf8;
+  border-color: #38bdf8;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* Standby / Signal Search Screen */
+.cftv-standby-screen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, #0a1128 0%, #030712 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.cftv-crosshair {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.cftv-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+  animation: cftvScan 3.5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes cftvScan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.cftv-signal-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  padding: 1rem;
+  max-width: 85%;
+  z-index: 2;
+}
+
+.cftv-cam-icon {
+  width: 32px;
+  height: 32px;
+  color: rgba(56, 189, 248, 0.45);
+  margin-bottom: 0.2rem;
+}
+
+.cftv-status-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  font-family: monospace;
+}
+
+.cftv-status-desc {
+  font-size: 0.65rem;
+  color: #64748b;
+  max-width: 220px;
+  line-height: 1.3;
+}
+
+.cftv-retry-btn {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cftv-retry-btn:hover {
+  background: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
 }
